@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:15-alpine
+    container_name: ap_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: payments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  redis:
+    image: redis:7.0.11-alpine
+    container_name: ap_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache:/data
+
+volumes:
+  pgdata: {}
+  cache: {}
