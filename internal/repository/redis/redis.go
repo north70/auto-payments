@@ -1,13 +1,13 @@
 package redis
 
 import (
-	"fmt"
+	"AutoPayment/config"
 	"github.com/redis/go-redis/v9"
 )
 
-func NewRedisDB(host, port string) (*redis.Client, error) {
+func NewRedisDB(cfg config.Redis) (*redis.Client, error) {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", host, port),
+		Addr:     cfg.Address(),
 		Password: "",
 		DB:       0,
 	})
