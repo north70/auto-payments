@@ -2,10 +2,10 @@ package main
 
 import (
 	"AutoPayment/config"
+	"AutoPayment/internal/handler/telegram"
 	"AutoPayment/internal/repository"
 	"AutoPayment/internal/repository/postgres"
 	"AutoPayment/internal/repository/redis"
-	"AutoPayment/internal/repository/telegram"
 	"AutoPayment/internal/service"
 	tgClient "AutoPayment/pkg/client/tg-client"
 	"fmt"

@@ -1,7 +1,7 @@
 package telegram
 
 import (
-	"AutoPayment/internal/repository/telegram/command"
+	command2 "AutoPayment/internal/handler/telegram/command"
 	"AutoPayment/internal/service"
 	"AutoPayment/pkg/client/tg-client"
 	"fmt"
@@ -20,10 +20,10 @@ func (tg *Telegram) InitCommands() {
 	tg.Bot.Commands.Commands = make(map[string]tg_client.Command)
 
 	tg.Bot.Commands.AddMany([]tg_client.Command{
-		command.NewHelpCommand(tg.Bot),
-		command.NewPaymentNewCommand(tg.Bot),
-		command.NewListPaymentCommand(tg.Bot, tg.Service),
-		command.NewWhoamiCommand(tg.Bot),
+		command2.NewHelpCommand(tg.Bot),
+		command2.NewPaymentNewCommand(tg.Bot),
+		command2.NewListPaymentCommand(tg.Bot, tg.Service),
+		command2.NewWhoamiCommand(tg.Bot),
 	})
 }
 
