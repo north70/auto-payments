@@ -8,6 +8,7 @@ import (
 	"AutoPayment/internal/repository/redis"
 	"AutoPayment/internal/service"
 	tgClient "AutoPayment/pkg/client/tg-client"
+	"AutoPayment/pkg/logger"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	redis2 "github.com/redis/go-redis/v9"
@@ -43,12 +44,15 @@ func loadCacheDb(cfg config.Redis) *redis2.Client {
 }
 
 func loadTgBot(srv *service.Service, cfgApp config.App) {
+	l := logger.InitLogger()
+
 	cfgTg := tgClient.Config{
 		Token:        cfgApp.BotToken,
 		DialogEnable: true,
 	}
 
 	bot := tgClient.NewBotApi(cfgTg)
+	bot.Logger = l
 	tg := telegram.NewTelegram(*bot, *srv)
 	tg.Bot.Store = srv.Telegram
 	tg.InitCommands()

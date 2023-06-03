@@ -1,10 +1,9 @@
 package telegram
 
 import (
-	command2 "AutoPayment/internal/handler/telegram/command"
+	"AutoPayment/internal/handler/telegram/command"
 	"AutoPayment/internal/service"
 	"AutoPayment/pkg/client/tg-client"
-	"fmt"
 )
 
 type Telegram struct {
@@ -20,10 +19,10 @@ func (tg *Telegram) InitCommands() {
 	tg.Bot.Commands.Commands = make(map[string]tg_client.Command)
 
 	tg.Bot.Commands.AddMany([]tg_client.Command{
-		command2.NewHelpCommand(tg.Bot),
-		command2.NewPaymentNewCommand(tg.Bot),
-		command2.NewListPaymentCommand(tg.Bot, tg.Service),
-		command2.NewWhoamiCommand(tg.Bot),
+		command.NewHelpCommand(tg.Bot),
+		command.NewPaymentNewCommand(tg.Bot, tg.Service.PaymentTemp, tg.Service.Payment),
+		command.NewListPaymentCommand(tg.Bot, tg.Service),
+		command.NewWhoamiCommand(tg.Bot),
 	})
 }
 
@@ -39,7 +38,7 @@ func (tg *Telegram) HandleMessages() {
 	for update := range updates {
 		err := tg.Bot.HandleMessage(update)
 		if err != nil {
-			fmt.Println(err.Error())
+			tg.Bot.Logger.Error().Msg(err.Error())
 		}
 	}
 }

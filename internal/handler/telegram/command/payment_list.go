@@ -56,15 +56,7 @@ func formatPayments(payments []model.Payment) string {
 	var message string
 
 	for _, payment := range payments {
-		amount := float32(payment.Amount) / 100
-		message = fmt.Sprintf("%s"+
-			"ID: %d\n"+
-			"Название: %s\n"+
-			"Пероидичность платежа: %d\n"+
-			"Дата платежа: %d\n"+
-			"Сумма платежа: %.2f\n"+
-			"Кол-во платежей: %d\n\n",
-			message, payment.Id, payment.Name, payment.PeriodDay, payment.PaymentDay, amount, payment.CountPay)
+		message = fmt.Sprintf("%s \n"+payment.StringForTg(), message)
 	}
 
 	return message

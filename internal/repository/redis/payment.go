@@ -5,11 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/redis/go-redis/v9"
 	"strconv"
+	"time"
 )
 
 var ctx = context.Background()
+
+const cacheTTL = 120
 
 type PaymentTempRepository struct {
 	db *redis.Client
@@ -41,5 +45,15 @@ func (repo *PaymentTempRepository) Get(chatId int) (model.PaymentTemp, error) {
 }
 
 func (repo *PaymentTempRepository) SetOrUpdate(chatId int, temp model.PaymentTemp) error {
+	jsonData, err := json.Marshal(temp)
+	if err != nil {
+		return errors.New("error encode temp model into json")
+	}
+
+	_, err = repo.db.Set(ctx, strconv.Itoa(chatId), jsonData, cacheTTL*time.Second).Result()
+	if err != nil {
+		return errors.New(fmt.Sprintf("error set cache for chat_id = %d", chatId))
+	}
+
 	return nil
 }

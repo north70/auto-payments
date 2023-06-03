@@ -26,18 +26,21 @@ func (repo *TelegramRepository) Create(chatId int, command string) error {
 func (repo *TelegramRepository) Update(chatId int, command, action *string) error {
 	setValues := make([]string, 0)
 	args := make([]interface{}, 0)
+	numParam := 1
 
 	if command != nil {
-		setValues = append(setValues, "command=?")
+		setValues = append(setValues, fmt.Sprintf("command=$%d", numParam))
 		args = append(args, *command)
+		numParam++
 	}
 
-	setValues = append(setValues, "action=?")
+	setValues = append(setValues, fmt.Sprintf("action=$%d", numParam))
 	args = append(args, action, chatId)
+	numParam++
 
 	values := strings.Join(setValues, ", ")
 
-	query := fmt.Sprintf("UPDATE telegram SET %s WHERE chat_id = ?", values)
+	query := fmt.Sprintf("UPDATE telegram SET %s WHERE chat_id = $%d", values, numParam)
 	_, err := repo.db.Exec(query, args...)
 
 	return err
@@ -46,7 +49,7 @@ func (repo *TelegramRepository) Update(chatId int, command, action *string) erro
 func (repo *TelegramRepository) Get(chatId int) (model.Telegram, error) {
 	data := model.Telegram{}
 
-	query := "SELECt * FROM telegram WHERE chat_id = ?"
+	query := "SELECt * FROM telegram WHERE chat_id = $1"
 	err := repo.db.Get(&data, query, chatId)
 	if err != nil {
 		return model.Telegram{}, err

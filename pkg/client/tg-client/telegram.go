@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/rs/zerolog"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -20,6 +20,7 @@ type HttpClient interface {
 
 type BotApi struct {
 	Config          Config
+	Logger          zerolog.Logger
 	Client          HttpClient
 	Commands        Commands
 	Store           Store
@@ -93,8 +94,8 @@ func (bot *BotApi) GetUpdatesChan(query UpdateQuery) UpdatesChannel {
 
 			updates, err := bot.GetUpdates(query)
 			if err != nil {
-				log.Println(err)
-				log.Println("Failed to get updates, retrying in 3 seconds...")
+				bot.Logger.Error().Msg(err.Error())
+				bot.Logger.Info().Msg("Failed to get updates, retrying in 3 seconds...")
 				time.Sleep(time.Second * 3)
 
 				continue
@@ -188,11 +189,9 @@ func (bot *BotApi) handleAction(upd Update) error {
 	}
 
 	if current.Action == nil {
-		message := fmt.Sprintf("Неизвестная операция")
-
 		sendMsgQuery := SendMessageQuery{
 			ChatId: chatId,
-			Text:   message,
+			Text:   "Неизвестная операция",
 		}
 
 		if err := bot.SendMessage(sendMsgQuery); err != nil {
@@ -204,7 +203,24 @@ func (bot *BotApi) handleAction(upd Update) error {
 	actionName := *current.Action
 
 	if err := dialog.ActionList()[actionName](upd); err != nil {
-		return err
+		bot.Logger.Debug().Msg(err.Error())
+		var msgValidationError *MessageValidationError
+		var text string
+
+		if errors.As(err, &msgValidationError) {
+			text = err.Error()
+		} else {
+			text = "Ошибка обработки. Повторите попытку"
+		}
+		sendMsgQuery := SendMessageQuery{
+			ChatId: chatId,
+			Text:   text,
+		}
+
+		if err := bot.SendMessage(sendMsgQuery); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	nextAction, ok := dialog.ActionMap()[actionName]
