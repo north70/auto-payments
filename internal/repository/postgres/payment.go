@@ -25,11 +25,11 @@ func (r *PaymentRepository) Create(payment model.Payment) error {
 	return err
 }
 
-func (r *PaymentRepository) Index(userId int) ([]model.Payment, error) {
+func (r *PaymentRepository) Index(chatId int64) ([]model.Payment, error) {
 	var models []model.Payment
 	query := fmt.Sprintf("SELECT * FROM auto_payments WHERE chat_id = $1")
 
-	err := r.db.Select(&models, query, userId)
+	err := r.db.Select(&models, query, chatId)
 
 	if err != nil {
 		return nil, err
@@ -38,11 +38,11 @@ func (r *PaymentRepository) Index(userId int) ([]model.Payment, error) {
 	return models, nil
 }
 
-func (r *PaymentRepository) Show(userId, id int) (model.Payment, error) {
+func (r *PaymentRepository) Show(chatId int64, id int) (model.Payment, error) {
 	payment := model.Payment{}
 	query := fmt.Sprintf("SELECT * FROM auto_payments WHERE id = $1 and chat_id = $2")
 
-	err := r.db.Get(&payment, query, id, userId)
+	err := r.db.Get(&payment, query, id, chatId)
 	if err != nil {
 		return model.Payment{}, err
 	}
@@ -50,9 +50,9 @@ func (r *PaymentRepository) Show(userId, id int) (model.Payment, error) {
 	return payment, nil
 }
 
-func (r *PaymentRepository) Delete(userId, id int) error {
+func (r *PaymentRepository) Delete(chatId int64, id int) error {
 	query := fmt.Sprintf("DELETE FROM auto_payments WHERE chat_id = $1 and id = $2")
-	_, err := r.db.Exec(query, userId, id)
+	_, err := r.db.Exec(query, chatId, id)
 
 	return err
 }
@@ -95,7 +95,7 @@ func (r *PaymentRepository) Update(payment model.UpdatePayment) error {
 	setValues = append(setValues, fmt.Sprintf("count_pay = $%d", numParam))
 	numParam++
 
-	args = append(args, payment.CountPay, payment.Id, payment.UserId)
+	args = append(args, payment.CountPay, payment.Id, payment.ChatId)
 	values := strings.Join(setValues, ", ")
 	query := fmt.Sprintf("UPDATE auto_payments SET %s WHERE id = $%d and user_id = $%d", values, numParam, numParam+1)
 

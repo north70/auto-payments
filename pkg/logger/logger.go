@@ -56,7 +56,7 @@ func InitLogger() zerolog.Logger {
 	defaultWriters = append(defaultWriters, outWriter)
 
 	writer := zerolog.MultiLevelWriter(defaultWriters...)
-	return zerolog.New(writer).With().Str("application", "hr-bot").Caller().Timestamp().Logger()
+	return zerolog.New(writer).With().Caller().Timestamp().Logger()
 }
 
 func configureOutputMessage(writer zerolog.ConsoleWriter) zerolog.ConsoleWriter {

@@ -3,7 +3,6 @@ package service
 import (
 	"AutoPayment/internal/model"
 	"AutoPayment/internal/repository"
-	tg_client "AutoPayment/pkg/client/tg-client"
 )
 
 type Service struct {
@@ -27,23 +26,20 @@ type Messenger interface {
 
 type Payment interface {
 	Create(payment model.Payment) error
-	Index(userId int) ([]model.Payment, error)
-	Show(userId, id int) (model.Payment, error)
-	Delete(userId, id int) error
+	Index(chatId int64) ([]model.Payment, error)
+	Show(chatId int64, id int) (model.Payment, error)
+	Delete(chatId int64, id int) error
 	Update(payment model.UpdatePayment) error
 }
 
 type PaymentTemp interface {
-	Flush(chatId int) error
-	Get(chatId int) (model.PaymentTemp, error)
-	SetOrUpdate(chatId int, temp model.PaymentTemp) error
+	Flush(chatId int64) error
+	Get(chatId int64) (model.PaymentTemp, error)
+	SetOrUpdate(chatId int64, temp model.PaymentTemp) error
 }
 
 type Telegram interface {
-	Has(chatId int) (bool, error)
-	New(chatId int, command string) error
-	Current(chatId int) (tg_client.ChatStatus, error)
-	ClearAction(chatId int) error
-	SetCommand(chatId int, command string) error
-	SetAction(chatId int, action string) error
+	Get(chatId int64) (model.Telegram, error)
+	Upsert(chatId int64, command string, action *string) error
+	UpdateAction(chatId int64, action *string) error
 }

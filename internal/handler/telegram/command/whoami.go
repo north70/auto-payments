@@ -1,40 +1,33 @@
 package command
 
 import (
-	"AutoPayment/pkg/client/tg-client"
 	"fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type WhoamiCommand struct {
-	Bot tg_client.BotApi
+type Whoami struct {
+	BaseCommand
 }
 
-func NewWhoamiCommand(bot tg_client.BotApi) *WhoamiCommand {
-	return &WhoamiCommand{bot}
+func NewWhoami(baseCmd *BaseCommand) *Whoami {
+	return &Whoami{*baseCmd}
 }
 
-func (cmd *WhoamiCommand) Name() string {
+func (cmd *Whoami) Name() string {
 	return "whoami"
 }
 
-func (cmd *WhoamiCommand) IsDialog() bool {
-	return false
-}
-
-func (cmd *WhoamiCommand) Description() string {
+func (cmd *Whoami) Description() string {
 	return "Получить информацию о себе"
 }
-func (cmd *WhoamiCommand) Handle(update tg_client.Update) error {
+func (cmd *Whoami) Handle(update tgbotapi.Update) error {
 	user := update.Message.From
 	message := fmt.Sprintf("Имя - %s\nФамилия - %s\nUsername - %s\nТелеграм ID - %d",
-		user.FirstName, user.LastName, user.Username, user.Id)
+		user.FirstName, user.LastName, user.UserName, user.ID)
 
-	sendMsgQuery := tg_client.SendMessageQuery{
-		ChatId: update.Message.From.Id,
-		Text:   message,
-	}
+	msg := tgbotapi.NewMessage(user.ID, message)
 
-	err := cmd.Bot.SendMessage(sendMsgQuery)
+	_, err := cmd.TGBot.Send(msg)
 
 	return err
 }

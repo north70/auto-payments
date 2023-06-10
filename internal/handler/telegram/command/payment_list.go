@@ -2,52 +2,42 @@ package command
 
 import (
 	"AutoPayment/internal/model"
-	"AutoPayment/internal/service"
-	tg_client "AutoPayment/pkg/client/tg-client"
 	"fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-type ListPaymentCommand struct {
-	Bot     tg_client.BotApi
-	Service service.Service
+type PaymentList struct {
+	BaseCommand
 }
 
-func NewListPaymentCommand(bot tg_client.BotApi, service service.Service) *ListPaymentCommand {
-	return &ListPaymentCommand{Bot: bot, Service: service}
+func NewPaymentList(baseCmd *BaseCommand) *PaymentList {
+	return &PaymentList{*baseCmd}
 }
 
-func (cmd *ListPaymentCommand) Name() string {
+func (cmd *PaymentList) Name() string {
 	return "list"
 }
 
-func (cmd *ListPaymentCommand) Description() string {
+func (cmd *PaymentList) Description() string {
 	return "Список всех платежей"
 }
 
-func (cmd *ListPaymentCommand) Handle(update tg_client.Update) error {
-	userId := update.Message.From.Id
+func (cmd *PaymentList) Handle(update tgbotapi.Update) error {
+	userId := update.Message.From.ID
 	payments, err := cmd.Service.Payment.Index(userId)
 
 	if err != nil || len(payments) == 0 {
-		sendMsgQuery := tg_client.SendMessageQuery{
-			ChatId: update.Message.From.Id,
-			Text:   "Не найдено платежей",
-		}
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Не найдено платежей")
 
-		err = cmd.Bot.SendMessage(sendMsgQuery)
+		_, err = cmd.TGBot.Send(msg)
 		if err != nil {
 			return err
 		}
 	}
 
-	message := formatPayments(payments)
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, formatPayments(payments))
 
-	sendMsgQuery := tg_client.SendMessageQuery{
-		ChatId: update.Message.From.Id,
-		Text:   message,
-	}
-
-	err = cmd.Bot.SendMessage(sendMsgQuery)
+	_, err = cmd.TGBot.Send(msg)
 
 	return err
 }

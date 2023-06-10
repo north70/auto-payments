@@ -17,16 +17,16 @@ func (s *PaymentService) Create(payment model.Payment) error {
 	return s.repo.Create(payment)
 }
 
-func (s *PaymentService) Index(userId int) ([]model.Payment, error) {
-	return s.repo.Index(userId)
+func (s *PaymentService) Index(chatId int64) ([]model.Payment, error) {
+	return s.repo.Index(chatId)
 }
 
-func (s *PaymentService) Show(userId, id int) (model.Payment, error) {
-	return s.repo.Show(userId, id)
+func (s *PaymentService) Show(chatId int64, id int) (model.Payment, error) {
+	return s.repo.Show(chatId, id)
 }
 
-func (s *PaymentService) Delete(userId, id int) error {
-	return s.repo.Delete(userId, id)
+func (s *PaymentService) Delete(chatId int64, id int) error {
+	return s.repo.Delete(chatId, id)
 }
 
 func (s *PaymentService) Update(payment model.UpdatePayment) error {
@@ -41,14 +41,14 @@ func NewPaymentTempService(repo repository.PaymentTemp) *PaymentTempService {
 	return &PaymentTempService{repo: repo}
 }
 
-func (s *PaymentTempService) Flush(chatId int) error {
+func (s *PaymentTempService) Flush(chatId int64) error {
 	return s.repo.Flush(chatId)
 }
 
-func (s *PaymentTempService) Get(chatId int) (model.PaymentTemp, error) {
+func (s *PaymentTempService) Get(chatId int64) (model.PaymentTemp, error) {
 	return s.repo.Get(chatId)
 }
 
-func (s *PaymentTempService) SetOrUpdate(chatId int, temp model.PaymentTemp) error {
+func (s *PaymentTempService) SetOrUpdate(chatId int64, temp model.PaymentTemp) error {
 	return s.repo.SetOrUpdate(chatId, temp)
 }

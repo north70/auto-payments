@@ -24,22 +24,20 @@ func NewRepository(pgDB *sqlx.DB, cacheDB *redisClient.Client) *Repository {
 
 type Payment interface {
 	Create(payment model.Payment) error
-	Index(userId int) ([]model.Payment, error)
-	Show(userId, id int) (model.Payment, error)
-	Delete(userId, id int) error
+	Index(chatId int64) ([]model.Payment, error)
+	Show(chatId int64, id int) (model.Payment, error)
+	Delete(chatId int64, id int) error
 	Update(payment model.UpdatePayment) error
 }
 
 type Telegram interface {
-	Create(chatId int, command string) error
-	Has(chatId int) (bool, error)
-	Update(chatId int, command, action *string) error
-	Get(chatId int) (model.Telegram, error)
-	ClearAction(chatId int) error
+	Upsert(chatId int64, command string, action *string) error
+	UpdateAction(chatId int64, action *string) error
+	Get(chatId int64) (model.Telegram, error)
 }
 
 type PaymentTemp interface {
-	Flush(chatId int) error
-	Get(chatId int) (model.PaymentTemp, error)
-	SetOrUpdate(chatId int, temp model.PaymentTemp) error
+	Flush(chatId int64) error
+	Get(chatId int64) (model.PaymentTemp, error)
+	SetOrUpdate(chatId int64, temp model.PaymentTemp) error
 }
