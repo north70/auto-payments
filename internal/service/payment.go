@@ -3,6 +3,7 @@ package service
 import (
 	"AutoPayment/internal/model"
 	"AutoPayment/internal/repository"
+	"time"
 )
 
 type PaymentService struct {
@@ -14,6 +15,15 @@ func NewPaymentService(repo repository.Payment) *PaymentService {
 }
 
 func (s *PaymentService) Create(payment model.Payment) error {
+	today := time.Now()
+	var nextPayDay time.Time
+	if payment.PaymentDay > today.Day() {
+		nextPayDay = today.AddDate(0, 0, payment.PaymentDay-today.Day())
+	} else {
+		nextPayDay = today.AddDate(0, 1, payment.PaymentDay-today.Day())
+	}
+	payment.NextPayDate = nextPayDay
+
 	return s.repo.Create(payment)
 }
 

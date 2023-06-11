@@ -43,9 +43,9 @@ func main() {
 		log.Fatal().Msg("error authorized in telegram")
 	}
 	log.Info().Msg("telegram success authorized")
+
 	bot := telegram.NewTgBot(botApi, cfg, log, srv)
 	bot.Start()
-	//loadTgBot(srv, cfg.App)
 }
 
 func loadPgDb(cfg config.Postgres) (*sqlx.DB, error) {

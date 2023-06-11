@@ -27,14 +27,14 @@ func (a *PaymentNewName) Handle(upd tgbotapi.Update) error {
 		return err
 	}
 
-	msg := tgbotapi.NewMessage(chatId, "Введите тип платежа. 1 - регулярный. 2 - временный")
+	msg := tgbotapi.NewMessage(chatId, "Введите периодичность платежа в днях")
 	_, err = a.TGBot.Send(msg)
 
 	return err
 }
 
 func (a *PaymentNewName) Next() string {
-	next := PaymentNewPeriodType{}
+	next := PaymentNewPeriod{}
 
 	return next.Name()
 }

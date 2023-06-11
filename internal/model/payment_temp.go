@@ -6,7 +6,6 @@ type PaymentTemp struct {
 	IsFull     bool
 	ChatId     int64
 	Name       *string
-	PeriodType *PeriodType
 	PeriodDay  *int
 	PaymentDay *int
 	Amount     *int
@@ -21,7 +20,6 @@ func (temp PaymentTemp) ToMainStruct() (Payment, error) {
 	mainS := Payment{
 		ChatId:     temp.ChatId,
 		Name:       *temp.Name,
-		PeriodType: *temp.PeriodType,
 		PeriodDay:  *temp.PeriodDay,
 		PaymentDay: *temp.PaymentDay,
 		Amount:     *temp.Amount,

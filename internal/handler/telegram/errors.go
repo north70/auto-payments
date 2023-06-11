@@ -5,9 +5,11 @@ import (
 	"fmt"
 )
 
-type tgError string
+const (
+	ErrorInitBot tgError = "error authorize in telegram %s"
+)
 
-const errorInitBot tgError = "error authorize in telegram %s"
+type tgError string
 
 func (t *TgBot) fmtError(msg tgError, params ...any) error {
 	errMsg := fmt.Sprintf(string(msg), params...)

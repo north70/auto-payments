@@ -1,7 +1,7 @@
 package action
 
 import (
-	"errors"
+	"AutoPayment/internal/handler/telegram/errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strconv"
 )
@@ -26,7 +26,7 @@ func (a *PaymentNewCountPay) Handle(upd tgbotapi.Update) error {
 	}
 	countPay, err := strconv.Atoi(upd.Message.Text)
 	if err != nil {
-		return errors.New("кол-во платежей должно быть числом")
+		return errors.NewTgValidationError("Кол-во платежей должно быть числом")
 	}
 
 	tempPayment.CountPay = &countPay

@@ -17,7 +17,8 @@ func NewPaymentRepository(db *sqlx.DB) *PaymentRepository {
 }
 
 func (r *PaymentRepository) Create(payment model.Payment) error {
-	query := fmt.Sprintf("INSERT INTO auto_payments (chat_id, name, period_type, period_day, payment_day, amount, count_pay, created_at) VALUES (:chat_id, :name, :period_type, :period_day, :payment_day, :amount, :count_pay, :created_at)")
+	query := `INSERT INTO auto_payments (chat_id, name, period_day, payment_day, amount, count_pay, next_pay_date, created_at) 
+			  VALUES (:chat_id, :name, :period_day, :payment_day, :amount, :count_pay, :next_pay_date, :created_at)`
 	payment.CreatedAt = time.Now()
 
 	_, err := r.db.NamedExec(query, payment)
@@ -27,7 +28,7 @@ func (r *PaymentRepository) Create(payment model.Payment) error {
 
 func (r *PaymentRepository) Index(chatId int64) ([]model.Payment, error) {
 	var models []model.Payment
-	query := fmt.Sprintf("SELECT * FROM auto_payments WHERE chat_id = $1")
+	query := "SELECT * FROM auto_payments WHERE chat_id = $1"
 
 	err := r.db.Select(&models, query, chatId)
 
@@ -40,7 +41,7 @@ func (r *PaymentRepository) Index(chatId int64) ([]model.Payment, error) {
 
 func (r *PaymentRepository) Show(chatId int64, id int) (model.Payment, error) {
 	payment := model.Payment{}
-	query := fmt.Sprintf("SELECT * FROM auto_payments WHERE id = $1 and chat_id = $2")
+	query := "SELECT * FROM auto_payments WHERE id = $1 and chat_id = $2"
 
 	err := r.db.Get(&payment, query, id, chatId)
 	if err != nil {
@@ -68,12 +69,6 @@ func (r *PaymentRepository) Update(payment model.UpdatePayment) error {
 		numParam++
 	}
 
-	if payment.PeriodType != nil {
-		setValues = append(setValues, fmt.Sprintf("period_type = $%d", numParam))
-		args = append(args, payment.PeriodType)
-		numParam++
-	}
-
 	if payment.PeriodDay != nil {
 		setValues = append(setValues, fmt.Sprintf("period_day = $%d", numParam))
 		args = append(args, payment.PeriodDay)
@@ -89,6 +84,12 @@ func (r *PaymentRepository) Update(payment model.UpdatePayment) error {
 	if payment.Amount != nil {
 		setValues = append(setValues, fmt.Sprintf("amount = $%d", numParam))
 		args = append(args, payment.Name)
+		numParam++
+	}
+
+	if payment.Amount != nil {
+		setValues = append(setValues, fmt.Sprintf("next_pay_date = $%d", numParam))
+		args = append(args, payment.NextPayDate)
 		numParam++
 	}
 

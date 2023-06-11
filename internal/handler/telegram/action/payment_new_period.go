@@ -1,7 +1,7 @@
 package action
 
 import (
-	"errors"
+	"AutoPayment/internal/handler/telegram/errors"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strconv"
@@ -27,10 +27,10 @@ func (a *PaymentNewPeriod) Handle(upd tgbotapi.Update) error {
 	}
 	periodDay, err := strconv.Atoi(upd.Message.Text)
 	if err != nil {
-		return errors.New("период платежа должен быть целым числом")
+		return errors.NewTgValidationError("Период платежа должен быть целым числом")
 	}
 	if periodDay < 1 || periodDay > 30 {
-		return errors.New("период платежа может быть 1 до 30 дней")
+		return errors.NewTgValidationError("Период платежа может быть 1 до 30 дней")
 	}
 
 	fmt.Println(periodDay)
@@ -40,7 +40,7 @@ func (a *PaymentNewPeriod) Handle(upd tgbotapi.Update) error {
 		return err
 	}
 
-	msg := tgbotapi.NewMessage(chatId, "Введите число месяца, когда проходит платеж")
+	msg := tgbotapi.NewMessage(chatId, "Введите число месяца, когда будет ближайший платеж")
 	_, err = a.TGBot.Send(msg)
 
 	return err

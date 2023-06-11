@@ -6,15 +6,15 @@ import (
 )
 
 type Payment struct {
-	Id         int        `db:"id"`
-	ChatId     int64      `db:"chat_id"`
-	Name       string     `db:"name"`
-	PeriodType PeriodType `db:"period_type"`
-	PeriodDay  int        `db:"period_day"`
-	PaymentDay int        `db:"payment_day"`
-	Amount     int        `db:"amount"`
-	CountPay   *int       `db:"count_pay"`
-	CreatedAt  time.Time  `db:"created_at"`
+	Id          int       `db:"id"`
+	ChatId      int64     `db:"chat_id"`
+	Name        string    `db:"name"`
+	PeriodDay   int       `db:"period_day"`
+	PaymentDay  int       `db:"payment_day"`
+	Amount      int       `db:"amount"`
+	CountPay    *int      `db:"count_pay"`
+	NextPayDate time.Time `db:"next_pay_date"`
+	CreatedAt   time.Time `db:"created_at"`
 }
 
 func (payment Payment) StringForTg() string {
@@ -26,12 +26,12 @@ func (payment Payment) StringForTg() string {
 	amount := float32(payment.Amount) / 100
 	payStr = fmt.Sprintf(payStr+
 		"Название: %s\n"+
-		"Пероидичность платежа: %d\n"+
-		"Число платежей: %d\n"+
+		"Пероидичность платежа: %d дней\n"+
+		"Следующтй платёж: %s\n"+
 		"Сумма платежа: %.2f\n",
-		payment.Name, payment.PeriodDay, payment.PaymentDay, amount)
+		payment.Name, payment.PeriodDay, payment.NextPayDate.Format("2006-01-02"), amount)
 
-	if payment.PeriodType == PeriodTypeTemporary {
+	if *payment.CountPay != 0 {
 		payStr = fmt.Sprintf(payStr+"Кол-во платежей: %d\n", payment.CountPay)
 	}
 
@@ -39,20 +39,13 @@ func (payment Payment) StringForTg() string {
 }
 
 type UpdatePayment struct {
-	Id         int
-	ChatId     int
-	Name       *string
-	PeriodType *PeriodType
-	PeriodDay  *int
-	PaymentDay *int
-	Amount     *int
-	CountPay   *int
-	CreatedAt  time.Time
+	Id          int
+	ChatId      int
+	Name        *string
+	PeriodDay   *int
+	PaymentDay  *int
+	Amount      *int
+	CountPay    *int
+	NextPayDate time.Time
+	CreatedAt   time.Time
 }
-
-type PeriodType int
-
-const (
-	PeriodTypeRegular = iota + 1
-	PeriodTypeTemporary
-)

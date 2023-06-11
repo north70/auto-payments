@@ -1,7 +1,7 @@
 package action
 
 import (
-	"errors"
+	"AutoPayment/internal/handler/telegram/errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strconv"
 )
@@ -26,10 +26,10 @@ func (a *PaymentNewDayPay) Handle(upd tgbotapi.Update) error {
 	}
 	paymentDay, err := strconv.Atoi(upd.Message.Text)
 	if err != nil {
-		return errors.New("дата платежа должна быть целым числом")
+		return errors.NewTgValidationError("Дата платежа должна быть целым числом")
 	}
 	if paymentDay < 1 || paymentDay > 30 {
-		return errors.New("дата платежа может быть числом от 1 до 30")
+		return errors.NewTgValidationError("Дата платежа может быть числом от 1 до 30")
 	}
 
 	tempPayment.PaymentDay = &paymentDay

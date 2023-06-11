@@ -1,7 +1,7 @@
 package action
 
 import (
-	"errors"
+	"AutoPayment/internal/handler/telegram/errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strconv"
 )
@@ -26,10 +26,10 @@ func (a *PaymentNewAmount) Handle(upd tgbotapi.Update) error {
 	}
 	amountInFloat, err := strconv.ParseFloat(upd.Message.Text, 64)
 	if err != nil {
-		return errors.New("сумма платежа должна быть числом")
+		return errors.NewTgValidationError("Сумма платежа должна быть числом")
 	}
 	if amountInFloat == 0 {
-		return errors.New("сумма платежа должна быть больше 0")
+		return errors.NewTgValidationError("Сумма платежа должна быть больше 0")
 	}
 
 	amountInInt := int(amountInFloat * 100)
