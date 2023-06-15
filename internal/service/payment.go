@@ -27,38 +27,51 @@ func (s *PaymentService) Create(payment model.Payment) error {
 	return s.repo.Create(payment)
 }
 
-func (s *PaymentService) Index(chatId int64) ([]model.Payment, error) {
-	return s.repo.Index(chatId)
+func (s *PaymentService) IndexByChatId(chatId int64) ([]model.Payment, error) {
+	return s.repo.IndexByChatId(chatId)
 }
 
-func (s *PaymentService) Show(chatId int64, id int) (model.Payment, error) {
-	return s.repo.Show(chatId, id)
+func (s *PaymentService) Show(id int) (model.Payment, error) {
+	return s.repo.Show(id)
 }
 
-func (s *PaymentService) Delete(chatId int64, id int) error {
-	return s.repo.Delete(chatId, id)
+func (s *PaymentService) Delete(id int) error {
+	return s.repo.Delete(id)
 }
 
 func (s *PaymentService) Update(payment model.UpdatePayment) error {
 	return s.repo.Update(payment)
 }
 
-type PaymentTempService struct {
-	repo repository.PaymentTemp
+func (s *PaymentService) IndexByTime(limit, offset int, time time.Time) ([]model.Payment, error) {
+	return s.repo.IndexByTime(limit, offset, time)
 }
 
-func NewPaymentTempService(repo repository.PaymentTemp) *PaymentTempService {
-	return &PaymentTempService{repo: repo}
-}
+func (s *PaymentService) UpdateNextPayDay(id int) error {
+	payment, err := s.Show(id)
+	if err != nil {
+		return err
+	}
 
-func (s *PaymentTempService) Flush(chatId int64) error {
-	return s.repo.Flush(chatId)
-}
+	now := time.Now()
 
-func (s *PaymentTempService) Get(chatId int64) (model.PaymentTemp, error) {
-	return s.repo.Get(chatId)
-}
+	if payment.NextPayDate.After(now) {
+		return nil
+	}
 
-func (s *PaymentTempService) SetOrUpdate(chatId int64, temp model.PaymentTemp) error {
-	return s.repo.SetOrUpdate(chatId, temp)
+	nextPayDate := payment.NextPayDate
+	for {
+		nextPayDate = nextPayDate.AddDate(0, 0, payment.PeriodDay)
+		if nextPayDate.After(now) {
+			break
+		}
+	}
+
+	upd := model.UpdatePayment{
+		Id:          id,
+		NextPayDate: &nextPayDate,
+	}
+	err = s.Update(upd)
+
+	return err
 }

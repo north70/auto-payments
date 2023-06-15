@@ -2,7 +2,6 @@ package action
 
 import (
 	"AutoPayment/internal/handler/telegram/errors"
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strconv"
 )
@@ -33,7 +32,6 @@ func (a *PaymentNewPeriod) Handle(upd tgbotapi.Update) error {
 		return errors.NewTgValidationError("Период платежа может быть 1 до 30 дней")
 	}
 
-	fmt.Println(periodDay)
 	tempPayment.PeriodDay = &periodDay
 
 	if err = a.Service.PaymentTemp.SetOrUpdate(chatId, tempPayment); err != nil {

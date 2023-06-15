@@ -40,12 +40,10 @@ func (payment Payment) StringForTg() string {
 
 type UpdatePayment struct {
 	Id          int
-	ChatId      int
 	Name        *string
 	PeriodDay   *int
 	PaymentDay  *int
 	Amount      *int
 	CountPay    *int
-	NextPayDate time.Time
-	CreatedAt   time.Time
+	NextPayDate *time.Time
 }

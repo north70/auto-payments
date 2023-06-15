@@ -24,7 +24,7 @@ func (cmd *PaymentList) Description() string {
 
 func (cmd *PaymentList) Handle(update tgbotapi.Update) error {
 	userId := update.Message.From.ID
-	payments, err := cmd.Service.Payment.Index(userId)
+	payments, err := cmd.Service.Payment.IndexByChatId(userId)
 
 	if err != nil || len(payments) == 0 {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Не найдено платежей")

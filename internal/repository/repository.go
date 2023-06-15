@@ -6,6 +6,7 @@ import (
 	"AutoPayment/internal/repository/redis"
 	"github.com/jmoiron/sqlx"
 	redisClient "github.com/redis/go-redis/v9"
+	"time"
 )
 
 type Repository struct {
@@ -23,10 +24,11 @@ func NewRepository(pgDB *sqlx.DB, cacheDB *redisClient.Client) *Repository {
 }
 
 type Payment interface {
+	IndexByTime(limit, offset int, time time.Time) ([]model.Payment, error)
 	Create(payment model.Payment) error
-	Index(chatId int64) ([]model.Payment, error)
-	Show(chatId int64, id int) (model.Payment, error)
-	Delete(chatId int64, id int) error
+	IndexByChatId(chatId int64) ([]model.Payment, error)
+	Show(id int) (model.Payment, error)
+	Delete(id int) error
 	Update(payment model.UpdatePayment) error
 }
 

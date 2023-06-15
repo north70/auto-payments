@@ -16,6 +16,19 @@ func NewPaymentRepository(db *sqlx.DB) *PaymentRepository {
 	return &PaymentRepository{db: db}
 }
 
+func (r *PaymentRepository) IndexByTime(limit, offset int, time time.Time) ([]model.Payment, error) {
+	var payments []model.Payment
+
+	query := "SELECT * FROM auto_payments WHERE next_pay_date < $1 LIMIT $2 OFFSET $3"
+
+	err := r.db.Select(&payments, query, time, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return payments, nil
+}
+
 func (r *PaymentRepository) Create(payment model.Payment) error {
 	query := `INSERT INTO auto_payments (chat_id, name, period_day, payment_day, amount, count_pay, next_pay_date, created_at) 
 			  VALUES (:chat_id, :name, :period_day, :payment_day, :amount, :count_pay, :next_pay_date, :created_at)`
@@ -26,7 +39,7 @@ func (r *PaymentRepository) Create(payment model.Payment) error {
 	return err
 }
 
-func (r *PaymentRepository) Index(chatId int64) ([]model.Payment, error) {
+func (r *PaymentRepository) IndexByChatId(chatId int64) ([]model.Payment, error) {
 	var models []model.Payment
 	query := "SELECT * FROM auto_payments WHERE chat_id = $1"
 
@@ -39,11 +52,11 @@ func (r *PaymentRepository) Index(chatId int64) ([]model.Payment, error) {
 	return models, nil
 }
 
-func (r *PaymentRepository) Show(chatId int64, id int) (model.Payment, error) {
+func (r *PaymentRepository) Show(id int) (model.Payment, error) {
 	payment := model.Payment{}
-	query := "SELECT * FROM auto_payments WHERE id = $1 and chat_id = $2"
+	query := "SELECT * FROM auto_payments WHERE id = $1"
 
-	err := r.db.Get(&payment, query, id, chatId)
+	err := r.db.Get(&payment, query, id)
 	if err != nil {
 		return model.Payment{}, err
 	}
@@ -51,9 +64,9 @@ func (r *PaymentRepository) Show(chatId int64, id int) (model.Payment, error) {
 	return payment, nil
 }
 
-func (r *PaymentRepository) Delete(chatId int64, id int) error {
-	query := fmt.Sprintf("DELETE FROM auto_payments WHERE chat_id = $1 and id = $2")
-	_, err := r.db.Exec(query, chatId, id)
+func (r *PaymentRepository) Delete(id int) error {
+	query := fmt.Sprintf("DELETE FROM auto_payments WHERE chat_id = $1")
+	_, err := r.db.Exec(query, id)
 
 	return err
 }
@@ -87,19 +100,21 @@ func (r *PaymentRepository) Update(payment model.UpdatePayment) error {
 		numParam++
 	}
 
-	if payment.Amount != nil {
+	if payment.NextPayDate != nil {
 		setValues = append(setValues, fmt.Sprintf("next_pay_date = $%d", numParam))
 		args = append(args, payment.NextPayDate)
 		numParam++
 	}
 
-	setValues = append(setValues, fmt.Sprintf("count_pay = $%d", numParam))
-	numParam++
+	if payment.CountPay != nil {
+		setValues = append(setValues, fmt.Sprintf("count_pay = $%d", numParam))
+		args = append(args, payment.NextPayDate)
+		numParam++
+	}
 
-	args = append(args, payment.CountPay, payment.Id, payment.ChatId)
+	args = append(args, payment.Id)
 	values := strings.Join(setValues, ", ")
-	query := fmt.Sprintf("UPDATE auto_payments SET %s WHERE id = $%d and user_id = $%d", values, numParam, numParam+1)
-
+	query := fmt.Sprintf("UPDATE auto_payments SET %s WHERE id = $%d", values, numParam)
 	_, err := r.db.Exec(query, args...)
 
 	return err

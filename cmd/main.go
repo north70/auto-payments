@@ -2,6 +2,7 @@ package main
 
 import (
 	"AutoPayment/config"
+	"AutoPayment/internal/handler/scheduler"
 	"AutoPayment/internal/handler/telegram"
 	"AutoPayment/internal/repository"
 	"AutoPayment/internal/service"
@@ -12,6 +13,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jmoiron/sqlx"
 	redis2 "github.com/redis/go-redis/v9"
+	"time"
 )
 
 func main() {
@@ -37,6 +39,16 @@ func main() {
 
 	repo := repository.NewRepository(pgDb, cacheDb)
 	srv := service.NewService(repo)
+
+	location, err := time.LoadLocation(cfg.App.AppLocation)
+	if err != nil {
+		log.Fatal().Msg(fmt.Sprintf("error load location %s", cfg.App.AppLocation))
+	}
+	log.Info().Msg(fmt.Sprintf("loaded location %s", location.String()))
+
+	schedule := scheduler.NewScheduler(srv, log, location)
+	schedule.Start()
+	log.Info().Msg("scheduler started")
 
 	botApi, err := tgbotapi.NewBotAPI(cfg.App.BotToken)
 	if err != nil {
