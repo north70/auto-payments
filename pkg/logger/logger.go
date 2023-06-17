@@ -78,14 +78,14 @@ func configureCaller(pc uintptr, file string, line int) string {
 	simpleFileName := filepath.Base(file)
 	simpleLinePointer := strconv.Itoa(line)
 
-	callerLength := len(fmt.Sprintf("%s", simpleFileName+":"+simpleLinePointer))
+	callerLength := len(simpleFileName + ":" + simpleLinePointer)
 	if callerLength <= lengthRequired {
 		callerLength = lengthRequired + len(":"+simpleLinePointer)
 		return fmt.Sprintf("%*s", callerLength, simpleFileName+":"+simpleLinePointer)
 	} else {
-		filePath := fmt.Sprintf("%s", simpleFileName)
+		filePath := simpleFileName
 		filePath = filePath[:lengthRequired-len(":"+simpleLinePointer)] + "..."
-		return fmt.Sprintf(filePath) + ":" + simpleLinePointer
+		return filePath + ":" + simpleLinePointer
 	}
 }
 
@@ -121,7 +121,6 @@ func configureFormatMessage(i interface{}) string {
 	} else {
 		message := fmt.Sprintf("%s", i)
 		// lengthRequired-3 it is 80 symbols string with ellipsis (80-3=77  len"..."=3)
-		message = message[:lengthRequired-3] + "..."
-		return fmt.Sprintf(message)
+		return message[:lengthRequired-3] + "..."
 	}
 }

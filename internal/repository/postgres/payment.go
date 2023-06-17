@@ -92,7 +92,7 @@ func (r *PaymentRepository) Show(id int) (model.Payment, error) {
 }
 
 func (r *PaymentRepository) Delete(chatId int64, name string) error {
-	query := fmt.Sprintf("DELETE FROM auto_payments WHERE chat_id = $1 and name = $2")
+	query := "DELETE FROM auto_payments WHERE chat_id = $1 and name = $2"
 	res, err := r.db.Exec(query, chatId, name)
 	if err != nil {
 		return err

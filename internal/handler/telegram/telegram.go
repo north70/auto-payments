@@ -62,6 +62,9 @@ func (t *TgBot) Start() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgError)
 
 			_, err = t.Bot.Send(msg)
+			if err != nil {
+				t.Log.Err(err)
+			}
 		}
 
 	}

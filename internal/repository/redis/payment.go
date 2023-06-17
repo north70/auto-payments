@@ -52,7 +52,7 @@ func (repo *PaymentTempRepository) SetOrUpdate(chatId int64, temp model.PaymentT
 
 	_, err = repo.db.Set(ctx, strconv.FormatInt(chatId, 10), jsonData, cacheTTL*time.Second).Result()
 	if err != nil {
-		return errors.New(fmt.Sprintf("error set cache for chat_id = %d", chatId))
+		return fmt.Errorf("error set cache for chat_id = %d", chatId)
 	}
 
 	return nil

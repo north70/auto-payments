@@ -8,7 +8,6 @@ import (
 	"AutoPayment/internal/service"
 	"AutoPayment/internal/storage"
 	"AutoPayment/pkg/logger"
-	"errors"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jmoiron/sqlx"
@@ -63,7 +62,7 @@ func main() {
 func loadPgDb(cfg config.Postgres) (*sqlx.DB, error) {
 	db, err := storage.NewPostgresDb(cfg)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error connect to db: %s", err.Error()))
+		return nil, fmt.Errorf("error connect to db: %s", err.Error())
 	}
 
 	return db, nil
@@ -72,7 +71,7 @@ func loadPgDb(cfg config.Postgres) (*sqlx.DB, error) {
 func loadCacheDb(cfg config.Redis) (*redis2.Client, error) {
 	db, err := storage.NewRedisDB(cfg)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error connect to cache db:%s", err.Error()))
+		return nil, fmt.Errorf("error connect to cache db:%s", err.Error())
 	}
 
 	return db, nil

@@ -17,7 +17,6 @@ func (s *Scheduler) UpdateNextPayDay() {
 		payments, err := s.service.IndexByTime(limit, offset, now)
 		if err != nil {
 			log.Err(err).Msg(fmt.Sprintf("error get payments with limit = %d and offset = %d", limit, offset))
-			offset += limit
 			break
 		}
 

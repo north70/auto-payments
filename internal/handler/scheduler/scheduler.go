@@ -20,7 +20,10 @@ func NewScheduler(service *service.Service, log zerolog.Logger, location *time.L
 }
 
 func (s *Scheduler) Start() {
-	s.schedule.Every(1).Day().At("00:00").Do(func() { s.UpdateNextPayDay() })
+	_, err := s.schedule.Every(1).Day().At("00:00").Do(func() { s.UpdateNextPayDay() })
+	if err != nil {
+		s.log.Err(err).Msg("error handle schedule command UpdateNextPayDay")
+	}
 
 	s.schedule.StartAsync()
 }
