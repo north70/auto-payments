@@ -1,6 +1,9 @@
 package action
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	"AutoPayment/internal/handler/telegram/errors"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+)
 
 type PaymentNewName struct {
 	BaseAction
@@ -23,11 +26,20 @@ func (a *PaymentNewName) Handle(upd tgbotapi.Update) error {
 	name := upd.Message.Text
 	tempPayment.Name = &name
 
+	exists, err := a.Service.Payment.ExistsByName(chatId, name)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return errors.NewTgValidationError("Платёж с таким уже названием существует")
+	}
+
 	if err = a.Service.PaymentTemp.SetOrUpdate(chatId, tempPayment); err != nil {
 		return err
 	}
 
-	msg := tgbotapi.NewMessage(chatId, "Введите периодичность платежа в днях")
+	msg := tgbotapi.NewMessage(chatId, "Введите через сколько дней будет следующий платёж")
 	_, err = a.TGBot.Send(msg)
 
 	return err

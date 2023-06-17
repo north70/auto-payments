@@ -24,12 +24,14 @@ func NewRepository(pgDB *sqlx.DB, cacheDB *redisClient.Client) *Repository {
 }
 
 type Payment interface {
+	ExistsByName(chatId int64, name string) (bool, error)
 	IndexByTime(limit, offset int, time time.Time) ([]model.Payment, error)
-	Create(payment model.Payment) error
+	Create(payment model.Payment) (model.Payment, error)
 	IndexByChatId(chatId int64) ([]model.Payment, error)
 	Show(id int) (model.Payment, error)
-	Delete(id int) error
+	Delete(chatId int64, name string) error
 	Update(payment model.UpdatePayment) error
+	SumForMonth(chatId int64) (int, error)
 }
 
 type Telegram interface {

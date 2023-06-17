@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"AutoPayment/internal/model"
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"strings"
@@ -29,14 +31,39 @@ func (r *PaymentRepository) IndexByTime(limit, offset int, time time.Time) ([]mo
 	return payments, nil
 }
 
-func (r *PaymentRepository) Create(payment model.Payment) error {
+func (r *PaymentRepository) Create(payment model.Payment) (model.Payment, error) {
 	query := `INSERT INTO auto_payments (chat_id, name, period_day, payment_day, amount, count_pay, next_pay_date, created_at) 
-			  VALUES (:chat_id, :name, :period_day, :payment_day, :amount, :count_pay, :next_pay_date, :created_at)`
+			  VALUES (:chat_id, :name, :period_day, :payment_day, :amount, :count_pay, :next_pay_date, :created_at) RETURNING *`
 	payment.CreatedAt = time.Now()
 
-	_, err := r.db.NamedExec(query, payment)
+	result, err := r.db.NamedQuery(query, payment)
+	if err != nil {
+		return model.Payment{}, err
+	}
+	defer result.Close()
+	for result.Next() {
+		err = result.StructScan(&payment)
+		if err != nil {
+			return model.Payment{}, err
+		}
+	}
 
-	return err
+	return payment, nil
+}
+
+func (r *PaymentRepository) ExistsByName(chatId int64, name string) (bool, error) {
+	var payment model.Payment
+	query := "SELECT * FROM auto_payments WHERE chat_id = $1 and name = $2"
+
+	err := r.db.Get(&payment, query, chatId, name)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *PaymentRepository) IndexByChatId(chatId int64) ([]model.Payment, error) {
@@ -64,9 +91,21 @@ func (r *PaymentRepository) Show(id int) (model.Payment, error) {
 	return payment, nil
 }
 
-func (r *PaymentRepository) Delete(id int) error {
-	query := fmt.Sprintf("DELETE FROM auto_payments WHERE chat_id = $1")
-	_, err := r.db.Exec(query, id)
+func (r *PaymentRepository) Delete(chatId int64, name string) error {
+	query := fmt.Sprintf("DELETE FROM auto_payments WHERE chat_id = $1 and name = $2")
+	res, err := r.db.Exec(query, chatId, name)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return errors.New("no one rows was delete")
+	}
 
 	return err
 }
@@ -118,4 +157,16 @@ func (r *PaymentRepository) Update(payment model.UpdatePayment) error {
 	_, err := r.db.Exec(query, args...)
 
 	return err
+}
+
+func (r *PaymentRepository) SumForMonth(chatId int64) (int, error) {
+	query := "SELECT sum(amount * (30 / period_day)) FROM auto_payments WHERE chat_id = $1"
+	var sum int
+
+	err := r.db.Get(&sum, query, chatId)
+	if err != nil {
+		return 0, err
+	}
+
+	return sum, nil
 }

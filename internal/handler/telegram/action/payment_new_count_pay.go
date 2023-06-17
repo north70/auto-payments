@@ -40,7 +40,8 @@ func (a *PaymentNewCountPay) Handle(upd tgbotapi.Update) error {
 		return err
 	}
 
-	if err = a.Service.Payment.Create(payment); err != nil {
+	payment, err = a.Service.Payment.Create(payment)
+	if err != nil {
 		return err
 	}
 

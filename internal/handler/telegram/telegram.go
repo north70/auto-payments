@@ -74,6 +74,8 @@ func (t *TgBot) initCommands() {
 		command.NewWhoami(baseCmd),
 		command.NewPaymentList(baseCmd),
 		command.NewPaymentNew(baseCmd),
+		command.NewSum(baseCmd),
+		command.NewPaymentDelete(baseCmd),
 	})
 
 	t.commands = commands
@@ -98,6 +100,7 @@ func (t *TgBot) initActions() {
 		action.NewPaymentNewCountPay(baseAction),
 		action.NewPaymentNewDayPay(baseAction),
 		action.NewPaymentNewPeriod(baseAction),
+		action.NewPaymentDelete(baseAction),
 	})
 
 	t.actions = actions
@@ -125,13 +128,13 @@ func (t *TgBot) handleCommand(upd tgbotapi.Update) error {
 	chatId := upd.Message.Chat.ID
 	err := cmd.Handle(upd)
 	if err != nil {
-		t.Log.Err(err).Msg(fmt.Sprintf("error handle command %s for chat %d", cmdName, chatId))
+		t.Log.Warn().Err(err).Msg(fmt.Sprintf("error handle command %s for chat %d", cmdName, chatId))
 		return err
 	}
 
 	err = t.Service.Telegram.Upsert(chatId, cmdName, cmd.NextAction())
 	if err != nil {
-		t.Log.Err(err).Msg(fmt.Sprintf("error update chat %d", chatId))
+		t.Log.Warn().Err(err).Msg(fmt.Sprintf("error update chat %d", chatId))
 		return err
 	}
 
@@ -143,7 +146,7 @@ func (t *TgBot) handleMessage(upd tgbotapi.Update) error {
 
 	chat, err := t.Service.Telegram.Get(chatId)
 	if err != nil {
-		t.Log.Debug().Msg(fmt.Sprintf("chat %d not found", chatId))
+		t.Log.Warn().Msg(fmt.Sprintf("chat %d not found", chatId))
 		return err
 	}
 
@@ -153,12 +156,12 @@ func (t *TgBot) handleMessage(upd tgbotapi.Update) error {
 
 	act, ok := t.actions[*chat.Action]
 	if !ok {
-		t.Log.Debug().Msg(fmt.Sprintf("action '%s' not found", *chat.Action))
+		t.Log.Warn().Msg(fmt.Sprintf("action '%s' not found", *chat.Action))
 		return err
 	}
 
 	if err = act.Handle(upd); err != nil {
-		t.Log.Err(err).Msg(fmt.Sprintf("error handle action '%s' for chat %d", act.Name(), chatId))
+		t.Log.Warn().Err(err).Msg(fmt.Sprintf("error handle action '%s' for chat %d", act.Name(), chatId))
 		return err
 	}
 
@@ -167,7 +170,7 @@ func (t *TgBot) handleMessage(upd tgbotapi.Update) error {
 		nextAct = &name
 	}
 	if err = t.Service.Telegram.UpdateAction(chatId, nextAct); err != nil {
-		t.Log.Err(err).Msg(fmt.Sprintf("error update chat %d", chatId))
+		t.Log.Warn().Err(err).Msg(fmt.Sprintf("error update chat %d", chatId))
 		return err
 	}
 

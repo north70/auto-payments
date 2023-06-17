@@ -14,7 +14,7 @@ func NewPaymentService(repo repository.Payment) *PaymentService {
 	return &PaymentService{repo: repo}
 }
 
-func (s *PaymentService) Create(payment model.Payment) error {
+func (s *PaymentService) Create(payment model.Payment) (model.Payment, error) {
 	today := time.Now()
 	var nextPayDay time.Time
 	if payment.PaymentDay > today.Day() {
@@ -35,8 +35,8 @@ func (s *PaymentService) Show(id int) (model.Payment, error) {
 	return s.repo.Show(id)
 }
 
-func (s *PaymentService) Delete(id int) error {
-	return s.repo.Delete(id)
+func (s *PaymentService) Delete(chatId int64, name string) error {
+	return s.repo.Delete(chatId, name)
 }
 
 func (s *PaymentService) Update(payment model.UpdatePayment) error {
@@ -45,6 +45,14 @@ func (s *PaymentService) Update(payment model.UpdatePayment) error {
 
 func (s *PaymentService) IndexByTime(limit, offset int, time time.Time) ([]model.Payment, error) {
 	return s.repo.IndexByTime(limit, offset, time)
+}
+
+func (s *PaymentService) SumForMonth(chatId int64) (int, error) {
+	return s.repo.SumForMonth(chatId)
+}
+
+func (s *PaymentService) ExistsByName(chatId int64, name string) (bool, error) {
+	return s.repo.ExistsByName(chatId, name)
 }
 
 func (s *PaymentService) UpdateNextPayDay(id int) error {

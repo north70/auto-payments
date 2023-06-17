@@ -19,17 +19,14 @@ type Payment struct {
 
 func (payment Payment) StringForTg() string {
 	var payStr string
-	if payment.Id != 0 {
-		payStr = fmt.Sprintf("ID: %d\n", payment.Id)
-	}
 
 	amount := float32(payment.Amount) / 100
 	payStr = fmt.Sprintf(payStr+
 		"Название: %s\n"+
-		"Пероидичность платежа: %d дней\n"+
+		"Периодичность платежа: %d дней\n"+
 		"Следующтй платёж: %s\n"+
-		"Сумма платежа: %.2f\n",
-		payment.Name, payment.PeriodDay, payment.NextPayDate.Format("2006-01-02"), amount)
+		"Сумма платежа: %.2f₽\n",
+		payment.Name, payment.PeriodDay, payment.NextPayDate.Format("02.01.2006"), amount)
 
 	if *payment.CountPay != 0 {
 		payStr = fmt.Sprintf(payStr+"Кол-во платежей: %d\n", payment.CountPay)
