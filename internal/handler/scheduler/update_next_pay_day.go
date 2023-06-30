@@ -25,9 +25,9 @@ func (s *Scheduler) UpdateNextPayDay() {
 		}
 
 		for _, payment := range payments {
-			err = s.service.UpdateNextPayDay(payment.Id)
+			err = s.service.UpdateNextPayDay(payment.ID)
 			if err != nil {
-				log.Err(err).Msg(fmt.Sprintf("not update next pay day for payment with id = %d", payment.Id))
+				log.Err(err).Msg(fmt.Sprintf("not update next pay day for payment with id = %d", payment.ID))
 				continue
 			}
 			countUpdated++

@@ -26,7 +26,7 @@ func (cmd *PaymentNew) Handle(update tgbotapi.Update) error {
 	chatId := update.Message.Chat.ID
 	message := "Введите название нового платежа"
 
-	paymentTemp := model.PaymentTemp{ChatId: chatId}
+	paymentTemp := model.PaymentTemp{ChatID: chatId}
 	err := cmd.Service.PaymentTemp.SetOrUpdate(chatId, paymentTemp)
 	if err != nil {
 		return err

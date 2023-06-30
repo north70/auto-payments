@@ -2,6 +2,7 @@ package action
 
 import (
 	"AutoPayment/internal/handler/telegram/errors"
+	"AutoPayment/internal/model"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"strconv"
 )
@@ -30,22 +31,26 @@ func (a *PaymentNewCountPay) Handle(upd tgbotapi.Update) error {
 	}
 
 	tempPayment.CountPay = &countPay
-	tempPayment.IsFull = true
 
 	if err = a.Service.PaymentTemp.SetOrUpdate(chatId, tempPayment); err != nil {
 		return err
 	}
-	payment, err := tempPayment.ToMainStruct()
+
+	var payment model.Payment
+	if tempPayment.ID == nil {
+		paymentMain := tempPayment.ToMainStruct()
+		payment, err = a.Service.Payment.Create(paymentMain)
+	} else {
+		paymentUpd := tempPayment.ToUpdateStruct()
+		nextPayDate := model.CalcFirstNextPayDate(*paymentUpd.PaymentDay)
+		paymentUpd.NextPayDate = &nextPayDate
+		payment, err = a.Service.Payment.Update(paymentUpd)
+	}
 	if err != nil {
 		return err
 	}
 
-	payment, err = a.Service.Payment.Create(payment)
-	if err != nil {
-		return err
-	}
-
-	msg := tgbotapi.NewMessage(chatId, "Авто-платёж успешно создан")
+	msg := tgbotapi.NewMessage(chatId, "Авто-платёж успешно создан/обновлён")
 	_, err = a.TGBot.Send(msg)
 	if err != nil {
 		return err

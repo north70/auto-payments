@@ -25,12 +25,13 @@ func NewRepository(pgDB *sqlx.DB, cacheDB *redisClient.Client) *Repository {
 
 type Payment interface {
 	ExistsByName(chatId int64, name string) (bool, error)
+	GetByName(chatId int64, name string) (model.Payment, error)
 	IndexByTime(limit, offset int, time time.Time) ([]model.Payment, error)
 	Create(payment model.Payment) (model.Payment, error)
 	IndexByChatId(chatId int64) ([]model.Payment, error)
 	Show(id int) (model.Payment, error)
 	Delete(chatId int64, name string) error
-	Update(payment model.UpdatePayment) error
+	Update(payment model.UpdatePayment) (model.Payment, error)
 	SumForMonth(chatId int64) (int, error)
 }
 

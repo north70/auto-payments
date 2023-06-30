@@ -1,10 +1,8 @@
 package model
 
-import "errors"
-
 type PaymentTemp struct {
-	IsFull     bool
-	ChatId     int64
+	ID         *int
+	ChatID     int64
 	Name       *string
 	PeriodDay  *int
 	PaymentDay *int
@@ -12,13 +10,9 @@ type PaymentTemp struct {
 	CountPay   *int
 }
 
-func (temp PaymentTemp) ToMainStruct() (Payment, error) {
-	if !temp.IsFull {
-		return Payment{}, errors.New("struct is not full")
-	}
-
+func (temp *PaymentTemp) ToMainStruct() Payment {
 	mainS := Payment{
-		ChatId:     temp.ChatId,
+		ChatID:     temp.ChatID,
 		Name:       *temp.Name,
 		PeriodDay:  *temp.PeriodDay,
 		PaymentDay: *temp.PaymentDay,
@@ -26,5 +20,18 @@ func (temp PaymentTemp) ToMainStruct() (Payment, error) {
 		CountPay:   temp.CountPay,
 	}
 
-	return mainS, nil
+	return mainS
+}
+
+func (temp *PaymentTemp) ToUpdateStruct() UpdatePayment {
+	update := UpdatePayment{
+		ID:         *temp.ID,
+		Name:       temp.Name,
+		PeriodDay:  temp.PeriodDay,
+		PaymentDay: temp.PaymentDay,
+		Amount:     temp.Amount,
+		CountPay:   temp.CountPay,
+	}
+
+	return update
 }

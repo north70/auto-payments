@@ -79,6 +79,7 @@ func (t *TgBot) initCommands() {
 		command.NewPaymentNew(baseCmd),
 		command.NewSum(baseCmd),
 		command.NewPaymentDelete(baseCmd),
+		command.NewPaymentUpdate(baseCmd),
 	})
 
 	t.commands = commands
@@ -104,6 +105,7 @@ func (t *TgBot) initActions() {
 		action.NewPaymentNewDayPay(baseAction),
 		action.NewPaymentNewPeriod(baseAction),
 		action.NewPaymentDelete(baseAction),
+		action.NewPaymentUpdate(baseAction),
 	})
 
 	t.actions = actions

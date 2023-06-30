@@ -15,14 +15,7 @@ func NewPaymentService(repo repository.Payment) *PaymentService {
 }
 
 func (s *PaymentService) Create(payment model.Payment) (model.Payment, error) {
-	today := time.Now()
-	var nextPayDay time.Time
-	if payment.PaymentDay > today.Day() {
-		nextPayDay = today.AddDate(0, 0, payment.PaymentDay-today.Day())
-	} else {
-		nextPayDay = today.AddDate(0, 1, payment.PaymentDay-today.Day())
-	}
-	payment.NextPayDate = nextPayDay
+	payment.NextPayDate = model.CalcFirstNextPayDate(payment.PaymentDay)
 
 	return s.repo.Create(payment)
 }
@@ -39,7 +32,7 @@ func (s *PaymentService) Delete(chatId int64, name string) error {
 	return s.repo.Delete(chatId, name)
 }
 
-func (s *PaymentService) Update(payment model.UpdatePayment) error {
+func (s *PaymentService) Update(payment model.UpdatePayment) (model.Payment, error) {
 	return s.repo.Update(payment)
 }
 
@@ -53,6 +46,10 @@ func (s *PaymentService) SumForMonth(chatId int64) (int, error) {
 
 func (s *PaymentService) ExistsByName(chatId int64, name string) (bool, error) {
 	return s.repo.ExistsByName(chatId, name)
+}
+
+func (s *PaymentService) GetByName(chatId int64, name string) (model.Payment, error) {
+	return s.repo.GetByName(chatId, name)
 }
 
 func (s *PaymentService) UpdateNextPayDay(id int) error {
@@ -76,10 +73,10 @@ func (s *PaymentService) UpdateNextPayDay(id int) error {
 	}
 
 	upd := model.UpdatePayment{
-		Id:          id,
+		ID:          id,
 		NextPayDate: &nextPayDate,
 	}
-	err = s.Update(upd)
+	_, err = s.Update(upd)
 
 	return err
 }

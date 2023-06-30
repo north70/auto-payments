@@ -10,8 +10,6 @@ import (
 	"AutoPayment/pkg/logger"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/jmoiron/sqlx"
-	redis2 "github.com/redis/go-redis/v9"
 	"time"
 )
 
@@ -24,15 +22,15 @@ func main() {
 	}
 	log.Info().Msg("config loaded")
 
-	pgDb, err := loadPgDb(cfg.Postgres)
+	pgDb, err := storage.NewPostgresDb(cfg.Postgres)
 	if err != nil {
-		log.Fatal().Msg(err.Error())
+		log.Fatal().Err(err).Msg("error connect to db")
 	}
 	log.Info().Msg("postgres database connected")
 
-	cacheDb, err := loadCacheDb(cfg.Redis)
+	cacheDb, err := storage.NewRedisDB(cfg.Redis)
 	if err != nil {
-		log.Fatal().Msg(err.Error())
+		log.Fatal().Err(err).Msg("error connect to cache db:%s")
 	}
 	log.Info().Msg("redis database connected")
 
@@ -57,22 +55,4 @@ func main() {
 
 	bot := telegram.NewTgBot(botApi, cfg, log, srv)
 	bot.Start()
-}
-
-func loadPgDb(cfg config.Postgres) (*sqlx.DB, error) {
-	db, err := storage.NewPostgresDb(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error connect to db: %s", err.Error())
-	}
-
-	return db, nil
-}
-
-func loadCacheDb(cfg config.Redis) (*redis2.Client, error) {
-	db, err := storage.NewRedisDB(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error connect to cache db:%s", err.Error())
-	}
-
-	return db, nil
 }

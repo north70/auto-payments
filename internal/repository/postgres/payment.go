@@ -33,7 +33,8 @@ func (r *PaymentRepository) IndexByTime(limit, offset int, time time.Time) ([]mo
 
 func (r *PaymentRepository) Create(payment model.Payment) (model.Payment, error) {
 	query := `INSERT INTO auto_payments (chat_id, name, period_day, payment_day, amount, count_pay, next_pay_date, created_at) 
-			  VALUES (:chat_id, :name, :period_day, :payment_day, :amount, :count_pay, :next_pay_date, :created_at) RETURNING *`
+			  VALUES (:chat_id, :name, :period_day, :payment_day, :amount, :count_pay, :next_pay_date, :created_at) 
+			  RETURNING *`
 	payment.CreatedAt = time.Now()
 
 	result, err := r.db.NamedQuery(query, payment)
@@ -64,6 +65,18 @@ func (r *PaymentRepository) ExistsByName(chatId int64, name string) (bool, error
 	}
 
 	return true, nil
+}
+
+func (r *PaymentRepository) GetByName(chatId int64, name string) (model.Payment, error) {
+	var payment model.Payment
+	query := "SELECT * FROM auto_payments WHERE chat_id = $1 and name = $2"
+
+	err := r.db.Get(&payment, query, chatId, name)
+	if err != nil {
+		return model.Payment{}, err
+	}
+
+	return payment, nil
 }
 
 func (r *PaymentRepository) IndexByChatId(chatId int64) ([]model.Payment, error) {
@@ -110,53 +123,58 @@ func (r *PaymentRepository) Delete(chatId int64, name string) error {
 	return err
 }
 
-func (r *PaymentRepository) Update(payment model.UpdatePayment) error {
+func (r *PaymentRepository) Update(updatePayment model.UpdatePayment) (model.Payment, error) {
 	args := make([]interface{}, 0)
 	setValues := make([]string, 0)
 	numParam := 1
 
-	if payment.Name != nil {
+	if updatePayment.Name != nil {
 		setValues = append(setValues, fmt.Sprintf("name = $%d", numParam))
-		args = append(args, payment.Name)
+		args = append(args, updatePayment.Name)
 		numParam++
 	}
 
-	if payment.PeriodDay != nil {
+	if updatePayment.PeriodDay != nil {
 		setValues = append(setValues, fmt.Sprintf("period_day = $%d", numParam))
-		args = append(args, payment.PeriodDay)
+		args = append(args, updatePayment.PeriodDay)
 		numParam++
 	}
 
-	if payment.PaymentDay != nil {
+	if updatePayment.PaymentDay != nil {
 		setValues = append(setValues, fmt.Sprintf("payment_day = $%d", numParam))
-		args = append(args, payment.PaymentDay)
+		args = append(args, updatePayment.PaymentDay)
 		numParam++
 	}
 
-	if payment.Amount != nil {
+	if updatePayment.Amount != nil {
 		setValues = append(setValues, fmt.Sprintf("amount = $%d", numParam))
-		args = append(args, payment.Name)
+		args = append(args, updatePayment.Amount)
 		numParam++
 	}
 
-	if payment.NextPayDate != nil {
+	if updatePayment.NextPayDate != nil {
 		setValues = append(setValues, fmt.Sprintf("next_pay_date = $%d", numParam))
-		args = append(args, payment.NextPayDate)
+		args = append(args, updatePayment.NextPayDate)
 		numParam++
 	}
 
-	if payment.CountPay != nil {
+	if updatePayment.CountPay != nil {
 		setValues = append(setValues, fmt.Sprintf("count_pay = $%d", numParam))
-		args = append(args, payment.NextPayDate)
+		args = append(args, updatePayment.CountPay)
 		numParam++
 	}
 
-	args = append(args, payment.Id)
+	args = append(args, updatePayment.ID)
 	values := strings.Join(setValues, ", ")
-	query := fmt.Sprintf("UPDATE auto_payments SET %s WHERE id = $%d", values, numParam)
-	_, err := r.db.Exec(query, args...)
+	query := fmt.Sprintf("UPDATE auto_payments SET %s WHERE id = $%d RETURNING *", values, numParam)
+	payment := model.Payment{}
 
-	return err
+	err := r.db.Get(&payment, query, args...)
+	if err != nil {
+		return model.Payment{}, err
+	}
+
+	return payment, nil
 }
 
 func (r *PaymentRepository) SumForMonth(chatId int64) (int, error) {
